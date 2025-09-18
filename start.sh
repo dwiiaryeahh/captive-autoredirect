@@ -11,14 +11,22 @@ AP_IP="192.168.15.1"
 SUBNET="192.168.15.0/24"
 TARGET_DIR="hostapd-mana"
 
+ip link set $IFACE down
+iw dev $IFACE set type __ap
+ip link set $IFACE up
+
 # cek apakah folder ada
 if [ -d "$TARGET_DIR" ]; then
   echo "✅ Folder '$TARGET_DIR' sudah ada, skip clone."
 else
   echo "📥 Folder '$TARGET_DIR' belum ada, cloning repo..."
   git clone https://github.com/sensepost/hostapd-mana.git "$TARGET_DIR"
-fi
 
+  echo "🔧 Build hostapd-mana..."
+  cd "$TARGET_DIR/hostapd"
+  sudo make
+  cd -
+fi
 chmod +x captive/setup.sh captive/start-server.sh
 ./captive/setup.sh && ./captive/start-server.sh
 

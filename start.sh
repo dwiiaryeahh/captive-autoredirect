@@ -6,7 +6,7 @@
 # 🔧 Konfigurasi (ubah sesuai kebutuhan)
 AP_IFACE="wlx00c0cab84be1"   # Interface WiFi untuk AP
 INTERNET_IFACE="wlan0"      # Interface untuk internet
-SSID_NAME=WIFI@KU
+SSID_NAME="WIFI@KU"
 AP_IP="192.168.15.1"
 SUBNET="192.168.15.0/24"
 TARGET_DIR="hostapd-mana"

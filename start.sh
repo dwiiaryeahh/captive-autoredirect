@@ -6,6 +6,7 @@
 # 🔧 Konfigurasi (ubah sesuai kebutuhan)
 AP_IFACE="wlx00c0cab84be1"   # Interface WiFi untuk AP
 INTERNET_IFACE="wlan0"      # Interface untuk internet
+SSID_NAME=WIFI@KU
 AP_IP="192.168.15.1"
 SUBNET="192.168.15.0/24"
 TARGET_DIR="hostapd-mana"
@@ -35,7 +36,7 @@ ip link set "$AP_IFACE" up
 cat > /etc/hostapd/hostapd.conf <<EOF
 interface=$AP_IFACE
 driver=nl80211
-ssid=WIFI GRATIS
+ssid=$SSID_NAME
 hw_mode=g
 channel=6
 auth_algs=1

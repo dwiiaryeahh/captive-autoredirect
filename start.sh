@@ -100,6 +100,8 @@ address=/twitter.com/$AP_IP
 address=/x.com/$AP_IP
 
 # Catch-all redirect
+log-queries 
+log-facility=/var/log/dnsmasq.log
 address=/#/$AP_IP
 EOF
 

